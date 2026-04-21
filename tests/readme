@@ -1,0 +1,207 @@
+// 1. Async
+
+// Think of async as saying:
+// "This function will do some things that take time, like waiting for the oven to bake a cake. 
+// Don’t expect it to finish instantly."
+
+//In code:
+async function bakeCake() {
+    // This is an async function
+}
+// You must use async if you want to use await inside a function.
+
+// 2. Await
+
+// Think of await as saying:
+// "Wait here until this thing is done before moving on."
+
+// Real-life example:
+await bakeCake();   // Wait until the cake is ready
+eatCake();          // Only do this after the cake is baked
+
+//In Playwright:
+
+await page.goto('https://example.com'); // Wait until the page fully loads
+await page.click('#login');             // Then click the login button
+
+//Without await, your script would try to click before the page is ready, and it would fail.
+
+//Super simple summary
+//async → “This function works with things that take time.”
+//await → “Wait here until this thing is finished.”
+
+const { test } = require('@playwright/test');
+
+test('Simple Async Await Example', async ({ page }) => {
+    // Open a webpage and wait until it's fully loaded
+    await page.goto('https://example.com');
+
+    // Wait for a button to appear and then click it
+    await page.click('text=More information');
+
+    // Wait for some text to appear and then print it
+    const content = await page.textContent('h1');
+    console.log(content);
+});
+
+// Step by step:
+// async ({ page }) → Marks the test function as asynchronous, so we can use await.
+// await page.goto(...) → Waits for the page to load completely.
+// await page.click(...) → Waits until the button is available and then clicks it.
+// await page.textContent(...) → Waits until the text is retrieved before moving on.
+// Without await, the script would try to click or read text before the page is ready, and it would fail.
+
+// Why we need to make a function asynchronous (async)
+
+// 1. Browser actions take time
+// In Playwright, actions like page.goto(), page.click(), or page.fill() don’t happen instantly.
+// They involve waiting for:
+// The website to load
+// Buttons or elements to appear
+// Network responses
+// If we wrote code synchronously, JS would try to do everything immediately without waiting, 
+// and most actions would fail.
+// 2. await only works inside async functions
+// await is how we tell JavaScript: “Wait here until this task finishes.
+// But JS only allows await inside functions marked with async.
+// So if you want to wait for a page to load or a button to be clickable, you must mark the function as async.
+
+// 3.Keeps code readable
+// Without async/await, you’d have to use .then() chains, which get messy:
+
+page.goto('https://example.com')
+  .then(() => page.click('#login'))
+  .then(() => page.fill('#username', 'Ashmita'));
+
+//With async/await, it looks like normal top-to-bottom code:
+await page.goto('https://example.com');
+await page.click('#login');
+await page.fill('#username', 'Ashmita');
+
+// Perfect! Let’s use a real-life analogy:
+// Async Function Analogy: Cooking Dinner
+
+// Imagine you are cooking dinner:
+// You start boiling water for pasta.
+// While the water is heating, you chop vegetables.
+// Once the water is ready, you cook the pasta.
+// Then you mix pasta with veggies.
+
+//How this maps to async and await:
+//Reallife	                                          JavaScript/Playwright
+//Boiling water	                                      page.goto('https://example.com')
+//Waiting until it's ready	                          await page.goto(...)
+//Chopping vegetables	                              Other JS code you can do in the meantime (non-blocking)
+//Cooking pasta	                                      Next Playwright action (await page.click(...))
+
+//async → “This function involves tasks that take time (like boiling water).”
+//await → “Pause here until the task finishes before doing the next step.”
+
+// Without marking it async, you can’t use await, and JS would try to “cook pasta” 
+// before the water boils—obviously it fails!
+
+//1. JavaScript is synchronous by default
+//Yes, by default, JS runs top-to-bottom, line by line.
+//But not all operations are synchronous. Some tasks, like network requests, timers, 
+//or Playwright/browser actions, are asynchronous—they take time to complete.
+
+//2. Why await is needed
+//await pauses the function until a Promise resolves.
+//A Promise is how JS represents something that will finish in the future, like loading a page.
+//Without await, JS doesn’t wait for that Promise. It moves to the next line immediately.
+
+//3. Why you still need async
+// await can only be used inside an async function.
+// If you try await in a normal function, JS throws an error:
+// Marking the function async tells JS:
+// "This function will contain asynchronous operations that may pause execution with await."
+
+//4. Why it’s not just synchronous
+// You cannot make Playwright actions synchronous because they rely on 
+// external resources (browser, network, elements appearing).
+
+// Even if JS is normally synchronous, these actions return Promises.
+// JS can’t “pause” naturally without await or .then().
+
+// So:
+// Default JS → synchronous → works line by line, but cannot wait for a page to load naturally.
+// Async/await → lets JS wait for async tasks like browser actions before moving on.
+
+// ✅ Analogy:
+// Without async/await → trying to eat pasta before water boils → disaster.
+// With async/await → wait until water boils → then cook pasta → works perfectly.
+
+//1. What is a Promise?
+// A Promise in JavaScript is an object that represents a task that will finish in the future.
+// It’s like a promise in real life: someone promises to give you something later.
+// In JS, a Promise is something that will eventually:
+// Resolve → the task finished successfully.
+// Reject → the task failed.
+// Pending → still in progress.
+
+let pizzaOrder = new Promise((resolve, reject) => {
+    let pizzaDelivered = true;
+
+    if (pizzaDelivered) {
+        resolve("Pizza is here!");
+    } else {
+        reject("Delivery failed!");
+    }
+});
+
+// Using then/catch
+pizzaOrder.then((message) => {
+    console.log(message); // "Pizza is here!"
+}).catch((error) => {
+    console.log(error);
+});
+
+// 4. Why Promises matter in Playwright
+// Actions like page.goto(), page.click() return Promises because:
+// They take time (loading pages, waiting for elements).
+// JS cannot pause by default, so it gives you a Promise as a placeholder.
+
+const result = page.goto('https://example.com'); // result is a Promise
+
+//To wait for it to finish, we use await:
+await page.goto('https://example.com'); // Wait until the page is loaded
+
+//✅ This ensures your next line of code only runs after the page is fully loaded.
+
+// Summary
+// Promise = a task that will finish in the future.
+// States: pending → resolved → rejected.
+// Use with async/await to make JS wait for async tasks like browser actions.
+
+
+// 1. What they are
+// async → Marks a function as asynchronous, allowing it to contain await.
+// await → Pauses execution until a Promise resolves, ensuring actions complete before moving on.
+
+// 2. Why they are needed in Playwright
+// Playwright actions (like page.goto(), page.click(), page.fill()) 
+// are asynchronous because they involve network requests, browser rendering, or waiting for elements.
+// Without await, JS would continue immediately, and actions might fail.
+// Without async, you cannot use await, so you cannot properly wait for these actions.
+
+// 3. How they work
+// async function → “This function contains tasks that take time.”
+// await → “Pause here until this task finishes.”
+
+// 1. What is a Promise in Playwright?
+// A Promise is an object that represents a task that will finish in the future.
+// Playwright actions like page.goto(), page.click(), or page.fill() are asynchronous and return a Promise.
+// The Promise can be in one of three states:
+// Pending → task is still running
+// Resolved → task completed successfully
+// Rejected → task failed
+
+// 2. Why Playwright uses Promises
+// Browser actions take time (loading pages, waiting for elements, network requests).
+// JS cannot wait for them synchronously by default.
+// Promises act as a placeholder for the result of the action.
+
+// 4. Key points
+// Every Playwright action that interacts with the browser returns a Promise.
+// You must wait for it (using await) before performing the next action.
+// Promises ensure that actions happen in the correct order and avoid errors.
