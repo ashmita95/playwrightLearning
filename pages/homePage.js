@@ -7,7 +7,6 @@ export class HomePage{
         this.addToCartButton = "//a[normalize-space()='Add to cart']"
         this.cart = "//a[@id='cartur']"
     }
-
     async addProductToCart(productName){
         await this.page.waitForSelector(this.productlists)
         const productlist = await this.page.$$(this.productlists)
